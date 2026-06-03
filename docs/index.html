@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dice Tavern</title>
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wood-dark: #2a1a0a;
+    --wood-mid: #3d2410;
+    --wood-light: #6b3d1e;
+    --wood-highlight: #8b5e3c;
+    --leather: #4a2c0a;
+    --parchment: #f5e6c8;
+    --parchment-dark: #d4b483;
+    --ink: #1a0f05;
+    --gold: #c9993a;
+    --gold-bright: #f0c060;
+    --gold-dim: #7a5c1a;
+    --ember: #c0440a;
+    --ember-bright: #f06020;
+    --shadow: rgba(0,0,0,0.7);
+    --felt: #1a2e1a;
+    --felt-mid: #243824;
+    --felt-light: #2e4a2e;
+    --candle: #f4c842;
+    --candle-dim: rgba(244,200,66,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--wood-dark);
+    color: var(--parchment);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='4' fill='%23c9993a' opacity='0.8'/%3E%3C/svg%3E") 10 10, auto;
+  }
+
+  /* WOOD GRAIN BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        88deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.08) 3px,
+        rgba(0,0,0,0.08) 4px
+      ),
+      repeating-linear-gradient(
+        92deg,
+        transparent,
+        transparent 8px,
+        rgba(255,255,255,0.015) 8px,
+        rgba(255,255,255,0.015) 9px
+      ),
+      radial-gradient(ellipse at 20% 50%, #3d1e08 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 30%, #2a1505 0%, transparent 50%),
+      linear-gradient(180deg, #1e0e04 0%, #2a1508 30%, #3d2010 60%, #1e0e04 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* CANDLELIGHT GLOW */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(200,140,40,0.18) 0%, rgba(180,100,20,0.08) 40%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: flicker 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes flicker {
+    0% { opacity: 0.8; transform: translateX(-50%) scale(1); }
+    30% { opacity: 1; transform: translateX(-49%) scale(1.03); }
+    60% { opacity: 0.75; transform: translateX(-51%) scale(0.97); }
+    100% { opacity: 0.9; transform: translateX(-50%) scale(1.01); }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+    position: relative;
+  }
+
+  .tavern-sign {
+    display: inline-block;
+    background: linear-gradient(180deg, #4a2c0a 0%, #2a1508 50%, #3d2010 100%);
+    border: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 20px 50px;
+    position: relative;
+    box-shadow:
+      0 0 30px rgba(200,140,40,0.3),
+      inset 0 0 20px rgba(0,0,0,0.5),
+      0 6px 0 #1a0a02,
+      0 8px 15px rgba(0,0,0,0.6);
+  }
+
+  .tavern-sign::before, .tavern-sign::after {
+    content: '⚔';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    font-size: 1.5rem;
+    opacity: 0.7;
+  }
+  .tavern-sign::before { left: 16px; }
+  .tavern-sign::after { right: 16px; }
+
+  .tavern-sign h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--gold-bright);
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 20px rgba(200,140,40,0.8), 2px 2px 4px rgba(0,0,0,0.8);
+    line-height: 1.1;
+  }
+
+  .tavern-sign p {
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    color: var(--parchment-dark);
+    font-size: 1rem;
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  /* SIGN CHAINS */
+  .sign-chains {
+    display: flex;
+    justify-content: center;
+    gap: 200px;
+    margin-top: -2px;
+  }
+  .chain { width: 3px; height: 24px; background: repeating-linear-gradient(180deg, var(--gold-dim) 0%, var(--gold-dim) 4px, transparent 4px, transparent 7px); }
+
+  /* MAIN TABLE SURFACE */
+  .table-surface {
+    background:
+      repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 3px),
+      linear-gradient(180deg, var(--felt) 0%, var(--felt-mid) 50%, var(--felt) 100%);
+    border: 4px solid var(--wood-light);
+    border-radius: 16px;
+    padding: 30px;
+    margin: 10px 0 24px;
+    box-shadow:
+      inset 0 0 60px rgba(0,0,0,0.4),
+      0 4px 0 var(--wood-dark),
+      0 6px 20px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .table-surface::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    pointer-events: none;
+  }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before, .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  /* DICE GRID */
+  .dice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .dice-btn {
+    background: linear-gradient(160deg, #3a2210 0%, #2a1808 60%, #1e1006 100%);
+    border: 2px solid var(--gold-dim);
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 14px 8px 10px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  .dice-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(200,140,40,0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .dice-btn:hover::before { opacity: 1; }
+
+  .dice-btn:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.5), 0 0 12px rgba(200,140,40,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .dice-btn.selected {
+    border-color: var(--gold-bright);
+    background: linear-gradient(160deg, #5a3418 0%, #3d2210 60%, #2a1808 100%);
+    box-shadow: 0 0 20px rgba(200,140,40,0.35), 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .dice-btn.selected::after {
+    content: '';
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 8px; height: 8px;
+    background: var(--gold-bright);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--gold-bright);
+  }
+
+  .dice-icon {
+    width: 52px;
+    height: 52px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    transition: transform 0.2s;
+  }
+
+  .dice-btn:hover .dice-icon { transform: rotate(15deg) scale(1.08); }
+  .dice-btn.selected .dice-icon { filter: drop-shadow(0 0 6px rgba(200,140,40,0.6)) drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+
+  .dice-label {
+    font-family: 'Cinzel', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--gold-bright);
+    text-shadow: 0 0 8px rgba(200,140,40,0.5);
+  }
+
+  .dice-sub {
+    font-family: 'Crimson Text', serif;
+    font-size: 0.75rem;
+    color: var(--parchment-dark);
+    opacity: 0.7;
+    font-style: italic;
+    text-align: center;
+    min-height: 16px;
+  }
+
+  /* DICE COUNT & MODIFIER ROW */
+  .roll-controls {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .control-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .control-input {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--gold-dim);
+    border-radius: 6px;
+    color: var(--parchment);
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .control-input:focus { border-color: var(--gold); box-shadow: 0 0 8px rgba(200,140,40,0.2); }
+
+  input[type=number]::-webkit-inner-spin-button { opacity: 0.5; }
+
+  /* CUSTOM DICE BUILDER */
+  .custom-section {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(200,140,40,0.2);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 8px 0 20px;
+  }
+
+  .custom-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .custom-label {
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    color: var(--parchment-dark);
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .custom-input {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--gold-dim);
+    border-radius: 6px;
+    color: var(--gold-bright);
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    text-align: center;
+    outline: none;
+    width: 80px;
+    transition: border-color 0.2s;
+  }
+
+  .custom-input:focus { border-color: var(--gold); }
+
+  /* ROLL BUTTON */
+  .roll-btn {
+    background: linear-gradient(180deg, #8b3a08 0%, #5a2004 50%, #3d1502 100%);
+    border: 2px solid var(--ember);
+    border-radius: 10px;
+    color: var(--parchment);
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 14px 32px;
+    position: relative;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 0 #1a0802, 0 6px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .roll-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(255,140,60,0.25) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .roll-btn:hover::before { opacity: 1; }
+  .roll-btn:hover {
+    border-color: var(--ember-bright);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 0 #1a0802, 0 8px 20px rgba(0,0,0,0.5), 0 0 20px rgba(200,80,10,0.3);
+  }
+
+  .roll-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1a0802, 0 4px 8px rgba(0,0,0,0.5);
+  }
+
+  .roll-btn.rolling {
+    animation: btnShake 0.4s ease-in-out;
+    pointer-events: none;
+  }
+
+  @keyframes btnShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-3px) rotate(-1deg); }
+    40% { transform: translateX(3px) rotate(1deg); }
+    60% { transform: translateX(-2px) rotate(-0.5deg); }
+    80% { transform: translateX(2px) rotate(0.5deg); }
+  }
+
+  /* RESULT AREA */
+  .result-area {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.25) 100%);
+    border: 1px solid rgba(200,140,40,0.2);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 20px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-area::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(200,140,40,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .result-placeholder {
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    color: rgba(200,160,80,0.3);
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .result-formula {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .dice-results-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 10px 0;
+  }
+
+  .die-result {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    position: relative;
+    animation: dieAppear 0.3s ease-out backwards;
+  }
+
+  @keyframes dieAppear {
+    from { transform: scale(0.3) rotate(180deg); opacity: 0; }
+    to { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .die-result svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .die-result .die-num {
+    position: relative;
+    z-index: 2;
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--parchment);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+
+  .die-result.max-roll .die-num { color: var(--gold-bright); text-shadow: 0 0 8px var(--gold-bright); }
+  .die-result.min-roll .die-num { color: #e04040; text-shadow: 0 0 8px #c03030; }
+
+  .result-total {
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    color: var(--gold-bright);
+    text-shadow: 0 0 20px rgba(200,140,40,0.6), 2px 2px 4px rgba(0,0,0,0.8);
+    margin-top: 4px;
+    animation: totalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+
+  @keyframes totalPop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .result-modifier-line {
+    font-family: 'Crimson Text', serif;
+    font-size: 0.95rem;
+    color: var(--parchment-dark);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .critical-banner {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 20px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    animation: bannerGlow 1s ease-in-out infinite alternate;
+  }
+
+  .critical-banner.nat20 {
+    color: var(--gold-bright);
+    border: 1px solid var(--gold);
+    background: rgba(200,140,40,0.1);
+  }
+
+  .critical-banner.nat1 {
+    color: #e04040;
+    border: 1px solid #a03030;
+    background: rgba(180,40,40,0.1);
+  }
+
+  @keyframes bannerGlow {
+    from { box-shadow: 0 0 5px currentColor; }
+    to { box-shadow: 0 0 16px currentColor, 0 0 30px currentColor; }
+  }
+
+  /* HISTORY */
+  .history-section {
+    margin-top: 24px;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 2px; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(200,140,40,0.1);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 0.88rem;
+    animation: histSlide 0.3s ease-out;
+  }
+
+  @keyframes histSlide {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .hist-formula { color: var(--parchment-dark); font-style: italic; flex: 1; }
+  .hist-dice { color: rgba(200,160,80,0.6); font-size: 0.8rem; }
+  .hist-total { font-family: 'Cinzel', serif; font-weight: 700; color: var(--gold); min-width: 32px; text-align: right; }
+
+  /* SPECIAL ROLL TYPES */
+  .roll-type-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .roll-type-btn {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(200,140,40,0.25);
+    border-radius: 6px;
+    color: var(--parchment-dark);
+    cursor: pointer;
+    font-family: 'Crimson Text', serif;
+    font-size: 0.9rem;
+    padding: 6px 14px;
+    transition: all 0.15s;
+    font-style: italic;
+  }
+
+  .roll-type-btn:hover { border-color: var(--gold-dim); color: var(--parchment); background: rgba(200,140,40,0.1); }
+  .roll-type-btn.active { border-color: var(--gold); color: var(--gold-bright); background: rgba(200,140,40,0.15); }
+
+  /* ROLLING ANIMATION OVERLAY */
+  .rolling-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .rolling-overlay.active { opacity: 1; }
+
+  .rolling-dice {
+    display: flex;
+    gap: 20px;
+  }
+
+  .rolling-die {
+    width: 60px;
+    height: 60px;
+    animation: spinDie 0.15s linear infinite;
+  }
+
+  @keyframes spinDie {
+    from { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    to { transform: rotate(360deg) scale(1); }
+  }
+
+  /* SPARKLE PARTICLES */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 50;
+    animation: particleFly 0.8s ease-out forwards;
+  }
+
+  @keyframes particleFly {
+    0% { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+  }
+
+  /* AMBIENT EMBERS */
+  .ember {
+    position: fixed;
+    width: 3px;
+    height: 3px;
+    background: var(--ember-bright);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    animation: emberRise linear infinite;
+    opacity: 0;
+  }
+
+  @keyframes emberRise {
+    0% { opacity: 0; transform: translateY(0) translateX(0); }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.4; }
+    100% { opacity: 0; transform: translateY(-120px) translateX(var(--drift)); }
+  }
+
+  /* CANDLE DECORATIONS */
+  .candles-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    margin-bottom: -8px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .candle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .candle-flame {
+    width: 10px;
+    height: 18px;
+    background: radial-gradient(ellipse at 50% 80%, #fff 0%, #f4d060 30%, #f08020 60%, transparent 90%);
+    border-radius: 50% 50% 40% 40%;
+    animation: candleFlame 2s ease-in-out infinite alternate;
+    filter: blur(0.5px);
+    position: relative;
+  }
+
+  .candle-flame::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 8px;
+    background: #2a1a0a;
+    border-radius: 1px;
+  }
+
+  @keyframes candleFlame {
+    0% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
+    30% { transform: scaleX(0.85) scaleY(1.1) rotate(3deg); opacity: 1; }
+    70% { transform: scaleX(1.1) scaleY(0.9) rotate(-2deg); opacity: 0.85; }
+    100% { transform: scaleX(0.9) scaleY(1.05) rotate(1deg); opacity: 0.95; }
+  }
+
+  .candle-body {
+    width: 14px;
+    height: 40px;
+    background: linear-gradient(90deg, #f0e8d0, #e8d8b8, #f0e8d0);
+    border-radius: 2px 2px 3px 3px;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  .candle-glow {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(255,200,60,0.35) 0%, transparent 70%);
+    pointer-events: none;
+    animation: candleGlow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes candleGlow { 0% { opacity: 0.8; } 100% { opacity: 0.4; } }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .tavern-sign h1 { font-size: 1.7rem; }
+    .dice-grid { grid-template-columns: repeat(4, 1fr); }
+    .dice-btn { padding: 10px 4px 8px; }
+    .dice-icon { width: 36px; height: 36px; }
+    .roll-controls { gap: 10px; }
+  }
+
+  .clear-btn {
+    background: none;
+    border: 1px solid rgba(200,140,40,0.2);
+    border-radius: 6px;
+    color: rgba(200,140,40,0.4);
+    cursor: pointer;
+    font-family: 'Crimson Text', serif;
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    transition: all 0.15s;
+    font-style: italic;
+  }
+  .clear-btn:hover { color: var(--gold-dim); border-color: var(--gold-dim); }
+
+  .roll-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient Embers (JS will create these) -->
+<div id="embers"></div>
+
+<!-- Rolling Overlay -->
+<div class="rolling-overlay" id="rollingOverlay">
+  <div class="rolling-dice" id="rollingDice"></div>
+</div>
+
+<div class="container">
+  <header>
+    <div class="sign-chains"><div class="chain"></div><div class="chain"></div></div>
+    <div class="tavern-sign">
+      <h1>🎲 The Dice Tavern</h1>
+      <p>Where fortune favours the bold — and the lucky</p>
+    </div>
+  </header>
+
+  <!-- CANDLES -->
+  <div class="candles-row">
+    <div class="candle-wrap">
+      <div class="candle-flame"></div>
+      <div class="candle-body"><div class="candle-glow"></div></div>
+    </div>
+    <div class="candle-wrap">
+      <div class="candle-flame" style="animation-delay:-0.7s"></div>
+      <div class="candle-body"><div class="candle-glow"></div></div>
+    </div>
+    <div class="candle-wrap">
+      <div class="candle-flame" style="animation-delay:-1.3s"></div>
+      <div class="candle-body"><div class="candle-glow"></div></div>
+    </div>
+  </div>
+
+  <!-- MAIN TABLE -->
+  <div class="table-surface">
+
+    <!-- DICE SELECTION -->
+    <div class="section-title">Dice Selection</div>
+
+    <div class="dice-grid" id="diceGrid"></div>
+
+    <!-- CUSTOM DICE -->
+    <div class="custom-section">
+      <div class="section-title" style="font-size:0.75rem; margin-bottom:10px;">Custom Dice</div>
+      <div class="custom-row">
+        <span class="custom-label">Face count:</span>
+        <input type="number" class="custom-input" id="customFaces" min="2" max="1000" value="100" placeholder="d?">
+        <button class="roll-type-btn" id="useCustomBtn" onclick="useCustomDice()">Use this dice</button>
+      </div>
+    </div>
+
+    <!-- ROLL TYPE -->
+    <div class="section-title">Roll Type</div>
+    <div class="roll-type-btns">
+      <button class="roll-type-btn active" onclick="setRollType('normal',this)">Normal</button>
+      <button class="roll-type-btn" onclick="setRollType('advantage',this)">Advantage (2 rolls, take highest)</button>
+      <button class="roll-type-btn" onclick="setRollType('disadvantage',this)">Disadvantage (2 rolls, take lowest)</button>
+      <button class="roll-type-btn" onclick="setRollType('droplow',this)">Drop Lowest (4d6 drop low)</button>
+    </div>
+
+    <!-- ROLL CONTROLS -->
+    <div class="roll-controls">
+      <div class="control-group" style="max-width:90px;">
+        <span class="control-label">Count</span>
+        <input type="number" class="control-input" id="diceCount" value="1" min="1" max="100">
+      </div>
+      <div class="control-group" style="max-width:110px;">
+        <span class="control-label">Modifier</span>
+        <input type="number" class="control-input" id="modifier" value="0" min="-99" max="99">
+      </div>
+      <div class="roll-actions" style="flex:2;">
+        <button class="roll-btn" id="rollBtn" onclick="rollDice()">🎲 Roll!</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-area" id="resultArea">
+      <div class="result-placeholder">Select a dice and roll, hero...</div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="history-section">
+      <div class="section-title" style="margin-top:20px;">
+        Roll History
+        <button class="clear-btn" onclick="clearHistory()">Clear</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div style="text-align:center; color:rgba(200,160,80,0.25); font-style:italic; font-size:0.85rem; padding:10px;">No rolls yet...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const DICE_TYPES = [
+  { faces: 4,   label: 'd4',   name: 'Tetrahedron',  color: '#c9993a' },
+  { faces: 6,   label: 'd6',   name: 'Cube',         color: '#8b5e9a' },
+  { faces: 8,   label: 'd8',   name: 'Octahedron',   color: '#3a7a5a' },
+  { faces: 10,  label: 'd10',  name: 'Decahedron',   color: '#4a6a9a' },
+  { faces: 12,  label: 'd12',  name: 'Dodecahedron', color: '#9a4a2a' },
+  { faces: 20,  label: 'd20',  name: 'Icosahedron',  color: '#2a6a8a' },
+  { faces: 100, label: 'd100', name: 'Percentile',   color: '#7a3a8a' },
+];
+
+const DICE_SHAPES = {
+  4: `<svg viewBox="0 0 52 52" fill="none">
+    <polygon points="26,4 48,44 4,44" fill="#3a2808" stroke="#c9993a" stroke-width="1.5"/>
+    <polygon points="26,4 48,44 4,44" fill="url(#g4)" opacity="0.5"/>
+    <line x1="26" y1="4" x2="26" y2="44" stroke="#c9993a" stroke-width="0.5" opacity="0.3"/>
+    <defs><linearGradient id="g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.15"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+  </svg>`,
+  6: `<svg viewBox="0 0 52 52" fill="none">
+    <rect x="4" y="4" width="44" height="44" rx="6" fill="#2a1e3a" stroke="#8b5e9a" stroke-width="1.5"/>
+    <rect x="4" y="4" width="44" height="44" rx="6" fill="url(#g6)" opacity="0.4"/>
+    <defs><linearGradient id="g6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+  </svg>`,
+  8: `<svg viewBox="0 0 52 52" fill="none">
+    <polygon points="26,3 49,26 26,49 3,26" fill="#1a3028" stroke="#3a7a5a" stroke-width="1.5"/>
+    <line x1="26" y1="3" x2="26" y2="49" stroke="#3a7a5a" stroke-width="0.5" opacity="0.3"/>
+    <line x1="3" y1="26" x2="49" y2="26" stroke="#3a7a5a" stroke-width="0.5" opacity="0.3"/>
+    <polygon points="26,3 49,26 26,49 3,26" fill="url(#g8)" opacity="0.4"/>
+    <defs><linearGradient id="g8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+  </svg>`,
+  10: `<svg viewBox="0 0 52 52" fill="none">
+    <polygon points="26,3 46,16 49,38 26,49 3,38 6,16" fill="#1a2838" stroke="#4a6a9a" stroke-width="1.5"/>
+    <line x1="26" y1="3" x2="26" y2="49" stroke="#4a6a9a" stroke-width="0.5" opacity="0.3"/>
+    <polygon points="26,3 46,16 49,38 26,49 3,38 6,16" fill="url(#g10)" opacity="0.4"/>
+    <defs><linearGradient id="g10" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+  </svg>`,
+  12: `<svg viewBox="0 0 52 52" fill="none">
+    <polygon points="26,3 38,8 47,20 47,33 38,45 26,49 14,45 5,33 5,20 14,8" fill="#2a1810" stroke="#9a4a2a" stroke-width="1.5"/>
+    <polygon points="26,3 38,8 47,20 47,33 38,45 26,49 14,45 5,33 5,20 14,8" fill="url(#g12)" opacity="0.4"/>
+    <defs><linearGradient id="g12" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+  </svg>`,
+  20: `<svg viewBox="0 0 52 52" fill="none">
+    <polygon points="26,3 48,16 48,36 26,49 4,36 4,16" fill="#0a2030" stroke="#2a6a8a" stroke-width="1.5"/>
+    <line x1="26" y1="3" x2="4" y2="36" stroke="#2a6a8a" stroke-width="0.5" opacity="0.25"/>
+    <line x1="26" y1="3" x2="48" y2="36" stroke="#2a6a8a" stroke-width="0.5" opacity="0.25"/>
+    <line x1="4" y1="16" x2="48" y2="36" stroke="#2a6a8a" stroke-width="0.5" opacity="0.2"/>
+    <line x1="48" y1="16" x2="4" y2="36" stroke="#2a6a8a" stroke-width="0.5" opacity="0.2"/>
+    <polygon points="26,3 48,16 48,36 26,49 4,36 4,16" fill="url(#g20)" opacity="0.4"/>
+    <defs><linearGradient id="g20" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.25"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+  </svg>`,
+  100: `<svg viewBox="0 0 52 52" fill="none">
+    <circle cx="26" cy="26" r="23" fill="#1e0a2e" stroke="#7a3a8a" stroke-width="1.5"/>
+    <circle cx="26" cy="26" r="18" fill="none" stroke="#7a3a8a" stroke-width="0.5" opacity="0.4"/>
+    <circle cx="26" cy="26" r="23" fill="url(#g100)" opacity="0.4"/>
+    <defs><linearGradient id="g100" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+  </svg>`,
+};
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let selectedDice = 20;
+let rollType = 'normal';
+let history = [];
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+function init() {
+  renderDiceGrid();
+  spawnEmbers();
+}
+
+function renderDiceGrid() {
+  const grid = document.getElementById('diceGrid');
+  grid.innerHTML = DICE_TYPES.map(d => `
+    <button class="dice-btn ${d.faces === selectedDice ? 'selected' : ''}"
+            onclick="selectDice(${d.faces})" title="${d.name}">
+      <div class="dice-icon">${getDiceShape(d.faces)}</div>
+      <span class="dice-label">${d.label}</span>
+      <span class="dice-sub">${d.name}</span>
+    </button>
+  `).join('');
+}
+
+function getDiceShape(faces) {
+  return DICE_SHAPES[faces] || DICE_SHAPES[10];
+}
+
+function selectDice(faces) {
+  selectedDice = faces;
+  document.querySelectorAll('.dice-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+function useCustomDice() {
+  const f = parseInt(document.getElementById('customFaces').value);
+  if (isNaN(f) || f < 2 || f > 1000) { alert('2 ile 1000 arasında bir değer girin!'); return; }
+  selectedDice = f;
+  document.querySelectorAll('.dice-btn').forEach(b => b.classList.remove('selected'));
+}
+
+function setRollType(type, btn) {
+  rollType = type;
+  document.querySelectorAll('.roll-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── ROLLING ────────────────────────────────────────────────────────────────
+function rollOneDie(faces) {
+  return Math.floor(Math.random() * faces) + 1;
+}
+
+async function rollDice() {
+  if (!selectedDice) return;
+
+  const count = Math.max(1, Math.min(100, parseInt(document.getElementById('diceCount').value) || 1));
+  const mod = parseInt(document.getElementById('modifier').value) || 0;
+  const btn = document.getElementById('rollBtn');
+
+  btn.classList.add('rolling');
+  showRollingAnimation();
+
+  await new Promise(r => setTimeout(r, 500));
+
+  btn.classList.remove('rolling');
+  hideRollingAnimation();
+
+  let rolls = [];
+  let actualRolls = [];
+  let label = '';
+
+  if (rollType === 'normal') {
+    for (let i = 0; i < count; i++) rolls.push(rollOneDie(selectedDice));
+    actualRolls = rolls;
+    label = `${count}d${selectedDice}${mod >= 0 ? '+' : ''}${mod !== 0 ? mod : ''}`;
+    if (mod === 0) label = `${count}d${selectedDice}`;
+
+  } else if (rollType === 'advantage') {
+    const r1 = rollOneDie(selectedDice), r2 = rollOneDie(selectedDice);
+    rolls = [r1, r2];
+    const best = Math.max(r1, r2);
+    actualRolls = [best];
+    label = `d${selectedDice} Avantaj [${r1}, ${r2}] → ${best}`;
+
+  } else if (rollType === 'disadvantage') {
+    const r1 = rollOneDie(selectedDice), r2 = rollOneDie(selectedDice);
+    rolls = [r1, r2];
+    const worst = Math.min(r1, r2);
+    actualRolls = [worst];
+    label = `d${selectedDice} Dezavantaj [${r1}, ${r2}] → ${worst}`;
+
+  } else if (rollType === 'droplow') {
+    const cnt = Math.max(4, count);
+    for (let i = 0; i < cnt; i++) rolls.push(rollOneDie(selectedDice));
+    const sorted = [...rolls].sort((a,b) => b - a);
+    actualRolls = sorted.slice(0, cnt - 1);
+    label = `${cnt}d${selectedDice} drop low`;
+  }
+
+  const sum = actualRolls.reduce((a,b) => a+b, 0) + mod;
+  showResult(rolls, actualRolls, sum, mod, label);
+  addHistory(label, rolls, sum);
+  spawnParticles(btn);
+}
+
+function showResult(allRolls, usedRolls, total, mod, formula) {
+  const area = document.getElementById('resultArea');
+
+  const isCritSuccess = selectedDice === 20 && usedRolls.includes(20);
+  const isCritFail = selectedDice === 20 && usedRolls.includes(1) && usedRolls.length === 1;
+
+  let html = '';
+
+  if (isCritSuccess) html += `<div class="critical-banner nat20">⭐ Doğal 20 — Kritik Başarı! ⭐</div>`;
+  if (isCritFail) html += `<div class="critical-banner nat1">💀 Doğal 1 — Kritik Başarısızlık! 💀</div>`;
+
+  html += `<div class="result-formula">${formula}</div>`;
+  html += `<div class="dice-results-row">`;
+
+  allRolls.forEach((r, i) => {
+    const isUsed = rollType === 'normal' || rollType === 'droplow'
+      ? true
+      : usedRolls.includes(r) && i < usedRolls.length;
+
+    const isMax = r === selectedDice;
+    const isMin = r === 1;
+    const dimmed = !isUsed && allRolls.length > usedRolls.length;
+
+    html += `<div class="die-result ${isMax ? 'max-roll' : ''} ${isMin ? 'min-roll' : ''}"
+      style="${dimmed ? 'opacity:0.3;' : ''} animation-delay:${i*0.08}s">
+      <svg viewBox="0 0 52 52">${innerDieShape(selectedDice)}</svg>
+      <span class="die-num" style="font-size:${r >= 100 ? '0.65rem' : r >= 10 ? '0.85rem' : '1rem'}">${r}</span>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  const fontSize = total >= 1000 ? '2.4rem' : total >= 100 ? '3rem' : total >= 10 ? '3.6rem' : '4rem';
+  html += `<div class="result-total" style="font-size:${fontSize}; animation-delay:${allRolls.length*0.08+0.1}s">${total}</div>`;
+
+  if (mod !== 0) {
+    const diceSum = total - mod;
+    html += `<div class="result-modifier-line">Zar: ${diceSum} ${mod >= 0 ? '+' : ''}${mod} Modifier = ${total}</div>`;
+  }
+
+  area.innerHTML = html;
+  area.style.background = isCritSuccess
+    ? 'linear-gradient(180deg, rgba(100,60,0,0.4) 0%, rgba(0,0,0,0.25) 100%)'
+    : isCritFail
+    ? 'linear-gradient(180deg, rgba(80,0,0,0.4) 0%, rgba(0,0,0,0.25) 100%)'
+    : 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.25) 100%)';
+}
+
+function innerDieShape(faces) {
+  const shapes = {
+    4: `<polygon points="26,5 47,43 5,43" fill="#2a1808" stroke="#c9993a" stroke-width="1.2"/>`,
+    6: `<rect x="5" y="5" width="42" height="42" rx="5" fill="#231830" stroke="#8b5e9a" stroke-width="1.2"/>`,
+    8: `<polygon points="26,5 47,26 26,47 5,26" fill="#182820" stroke="#3a7a5a" stroke-width="1.2"/>`,
+    10: `<polygon points="26,5 44,16 47,36 26,47 5,36 8,16" fill="#182230" stroke="#4a6a9a" stroke-width="1.2"/>`,
+    12: `<polygon points="26,5 36,8 45,18 45,34 36,45 26,47 16,45 7,34 7,18 16,8" fill="#221508" stroke="#9a4a2a" stroke-width="1.2"/>`,
+    20: `<polygon points="26,4 47,16 47,36 26,48 5,36 5,16" fill="#081828" stroke="#2a6a8a" stroke-width="1.2"/>
+         <line x1="26" y1="4" x2="5" y2="36" stroke="#2a6a8a" stroke-width="0.4" opacity="0.4"/>
+         <line x1="26" y1="4" x2="47" y2="36" stroke="#2a6a8a" stroke-width="0.4" opacity="0.4"/>`,
+    100: `<circle cx="26" cy="26" r="22" fill="#180a28" stroke="#7a3a8a" stroke-width="1.2"/>
+          <circle cx="26" cy="26" r="16" fill="none" stroke="#7a3a8a" stroke-width="0.4" opacity="0.4"/>`,
+  };
+  return shapes[faces] || shapes[10];
+}
+
+function addHistory(formula, rolls, total) {
+  const item = { formula, rolls: rolls.slice(0, 8), total, time: new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) };
+  history.unshift(item);
+  if (history.length > 20) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (history.length === 0) {
+    list.innerHTML = `<div style="text-align:center; color:rgba(200,160,80,0.25); font-style:italic; font-size:0.85rem; padding:10px;">Henüz atış yapılmadı...</div>`;
+    return;
+  }
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" style="animation-delay:${i*0.03}s">
+      <span style="color:var(--gold-dim); font-size:0.75rem;">${h.time}</span>
+      <span class="hist-formula">${h.formula}</span>
+      <span class="hist-dice">[${h.rolls.join(', ')}${h.rolls.length < history[i]?.allCount ? '…' : ''}]</span>
+      <span class="hist-total">${h.total}</span>
+    </div>
+  `).join('');
+}
+
+function clearHistory() {
+  history = [];
+  renderHistory();
+}
+
+// ─── ANIMATIONS ──────────────────────────────────────────────────────────────
+function showRollingAnimation() {
+  const overlay = document.getElementById('rollingOverlay');
+  const diceDiv = document.getElementById('rollingDice');
+  diceDiv.innerHTML = Array.from({length: 3}, (_, i) => `
+    <svg class="rolling-die" viewBox="0 0 52 52" style="animation-delay:${i*0.05}s">
+      ${innerDieShape(selectedDice)}
+    </svg>
+  `).join('');
+  overlay.classList.add('active');
+}
+
+function hideRollingAnimation() {
+  document.getElementById('rollingOverlay').classList.remove('active');
+}
+
+function spawnParticles(el) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (i / 12) * Math.PI * 2;
+    const dist = 40 + Math.random() * 60;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - 20;
+    const size = 3 + Math.random() * 4;
+    p.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      width:${size}px; height:${size}px;
+      --tx:${tx}px; --ty:${ty}px;
+      background:${['#c9993a','#f0c060','#e08020'][Math.floor(Math.random()*3)]};
+      border-radius:50%;
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 800);
+  }
+}
+
+function spawnEmbers() {
+  const container = document.getElementById('embers');
+  for (let i = 0; i < 12; i++) {
+    const e = document.createElement('div');
+    e.className = 'ember';
+    const x = Math.random() * 100;
+    const dur = 3 + Math.random() * 5;
+    const delay = Math.random() * 6;
+    const drift = (Math.random() - 0.5) * 40;
+    e.style.cssText = `left:${x}vw; bottom:${Math.random()*30}vh; animation-duration:${dur}s; animation-delay:${delay}s; --drift:${drift}px;`;
+    container.appendChild(e);
+  }
+}
+
+// ─── START ───────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
